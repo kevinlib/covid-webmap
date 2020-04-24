@@ -7,7 +7,7 @@ zoom: 3,
 maxzoom: 15
 });
 async function load_map() {
-  var data = await d3.json("./data/data.json");
+  var data = await d3.json("./covid_webmap/data/data.json");
   var layers = [{field: 'population',
                 displayName: 'Population',
                 colorMap: colorbrewer.YlGnBu[6]},
@@ -48,7 +48,7 @@ async function load_map() {
   map.on('load', function() {
   map.addSource('counties', {
     'type': 'geojson',
-    'data': '../data/data.geojson'
+    'data': './covid_webmap//data.geojson'
 });
 //add layers
 layers.forEach(function(layer) {
