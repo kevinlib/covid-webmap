@@ -47,9 +47,9 @@ async function load_map() {
   });
   map.on('load', function() {
   map.addSource('counties', {
-    'type': 'geojson',
-    'data': './data/data.geojson'
-});
+    'type': 'vector',
+    'url': 'mapbox://kevinlib.32zfduyq'
+    });
 //add layers
 layers.forEach(function(layer) {
   var values = data.map(a => a[layer['field']]);
@@ -78,6 +78,7 @@ layers.forEach(function(layer) {
   'id': layer['displayName'],
   'type': 'fill',
   'source': 'counties',
+  'source-layer': 'data-1mbq73',
   'layout': {'visibility': 'none'},
   'paint': {
   'fill-color': expression,
