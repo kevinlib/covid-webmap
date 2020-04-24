@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Covid-19 Map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src='https://api.mapbox.com/mapbox-gl-js/v1.9.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v1.9.1/mapbox-gl.css' rel='stylesheet' />
+<script src="https://d3js.org/d3.v5.js"></script>
+<script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+<link href="https://api.mapbox.com/mapbox-assembly/v0.24.0/assembly.min.css" rel="stylesheet">
+<script async defer src="https://api.mapbox.com/mapbox-assembly/v0.24.0/assembly.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js'></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+ul li {list-style-type:none; padding: 0px;}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<nav class='absolute right top mt24 mr24 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id="menu">
+  <strong class='block mb6 align-center'>Layers</strong>
+</nav>
+<div id="legend-container"></div>
+<script src="/javascript/map.js"></script>
+<div class='flex-parent flex-parent--center-cross flex-parent--center-main absolute top right bottom left bg-darken10 z5' id='spinner'>
+  <div class='flex-child loading'>
+</div>
+</div>
+</body>
+</html>
