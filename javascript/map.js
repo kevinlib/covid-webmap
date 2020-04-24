@@ -196,9 +196,7 @@ layers.forEach(function (layer) {
 
   if (layer['field'] != 'population' && layer['field'] != 'total_cases'){
   var layer_data = e.features[0].properties[layer['field']];
-  if (layer['field'] == 'total_pop_estimate'){
-    layer_data = d3.format(',')(layer_data);
-  };
+  layer_data = d3.format(',')(layer_data);
   var item = document.createElement('li');
   item.className = 'txt-bold';
   item.textContent = `${layer.displayName}: ${layer_data}`;
