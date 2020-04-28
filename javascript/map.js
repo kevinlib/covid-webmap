@@ -102,7 +102,7 @@ layers.forEach(function(layer) {
   var div1 = document.createElement('div');
   var div2 = document.createElement('div');
   div1.className = 'grid mb6';
-  div2.className ='grid txt-xs';
+  div2.className ='grid grid--gut30 txt-xs';
   layer['colorMap'].forEach(function(color_step){
     var color =  document.createElement('div');
     color.className = 'col h12';
