@@ -229,8 +229,6 @@ layers.forEach(function (layer) {
 });
 
 function addHistogram(){
-var filter = document.getElementById('pop-filter');
-filter.classList.remove('hide-visually');
 var histogramWidget = document.querySelector('as-histogram-widget');
 x = d3.scaleLinear()
       .domain(d3.extent(data, function(d) { return d.population; }));
