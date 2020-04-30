@@ -251,5 +251,19 @@ histogramWidget.addEventListener('selectionChanged', function (e) {
 });
 }
 addHistogram();
+buttons = ['button-menu', 'button-filter', 'button-legend'];
+buttons.forEach(function(i) {
+  var item = document.getElementById(i);
+  item.onclick = function(e){
+    // map of btn text to document id
+    const name = {'button-menu':'menu','button-filter':'pop-filter', 'button-legend':'legend-container'};
+    var control = document.getElementById(name[this.id]);
+    if (this.classList.contains('is-active')){
+      control.classList.add('hide-visually');
+      this.classList.remove('is-active');}
+    else {
+      control.classList.remove('hide-visually');
+      this.classList.add('is-active');}
+  }});
 };
 load_map();

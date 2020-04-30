@@ -15,6 +15,7 @@
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+#menu {margin-top: 100px; margin-right: 24px;}
 ul li {list-style-type:none; padding: 0px;}
 .mapboxgl-popup-close-button {
   margin-right: 6px;
@@ -23,22 +24,37 @@ ul li {list-style-type:none; padding: 0px;}
 }
 h2.as-widget-header__header {margin-left: 6px;}
 .as-widget-selection__selection {margin-left: 6px;}
+#btn-group button {float: left; cursor: pointer; text-align: center; margin-left: 12px;}
 </style>
 </head>
 <body>
 <div id="map"></div>
-<nav class='absolute right top mt24 mr24 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id="menu">
+<div id="btn-group" class='absolute right top mt24 mr24'>
+<button class='btn btn--stroke flex-parent-inline bg-lighten50 bg-blue-on-active color-white-on-active is-active'
+id='button-menu'>Layers
+<svg class='icon w24 h24'><use xlink:href='#icon-layers'/></svg>
+</button>
+<button class='btn btn--stroke flex-parent-inline bg-lighten50 bg-blue-on-active color-white-on-active is-active'
+id='button-filter'>Filter
+<svg class='icon w24 h24'><use xlink:href='#icon-filter'/></svg>
+</button>
+<button class='btn btn--stroke flex-parent-inline bg-lighten50 bg-blue-on-active color-white-on-active is-active'
+ id='button-legend'>Legend
+<svg class='icon w24 h24'><use xlink:href='#icon-graph'/></svg>
+</button>
+</div>
+<nav class='absolute right round bg-white flex-parent flex-parent--column py6 shadow-darken10' id="menu">
   <strong class='block mb6 align-center'>Layers</strong>
 </nav>
 <div id="legend-container"></div>
-<script src="./javascript/map.js"></script>
+<script src="/javascript/map.js"></script>
 <div class='flex-parent flex-parent--center-cross flex-parent--center-main absolute top right bottom left bg-darken10 z5' id='spinner'>
   <div class='flex-child loading'></div>
 </div>
 <div class='hide-visually absolute left top mt24 ml24 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id='pop-filter' style="width: 500px;">
   <as-histogram-widget
     color = '#448ee4'
-    heading="Population"
+    heading="Population Filter"
     show-header="true"
     show-clear>
   </as-histogram-widget>
