@@ -218,5 +218,38 @@ layers.forEach(function (layer) {
   popup.remove();
   });
 });
+function addHistogram(){
+var filter = document.getElementById('pop-filter');
+filter.classList.remove('hide-visually');
+var histogramWidget = document.querySelector('as-histogram-widget');
+x = d3.scaleLinear()
+      .domain(d3.extent(data, function(d) { return d.population; }));
+
+hist = d3.histogram()
+.value(function(d) { return d.population; })   // I need to give the vector of value
+.domain(x.domain())  // then the domain of the graphic
+.thresholds(x.ticks(100))(data);
+rearrange = function(a){return {start: a.x0, end: a.x1, value: a.length}};
+histogramWidget.data = hist.map(rearrange);
+// histogramWidget.range = [0,100];
+histogramWidget.xAxisOptions = {ticks: 10};
+
+histogramWidget.tooltipFormatter = function (data) {
+  return histogramWidget.defaultFormatter(data);
+}
+//
+histogramWidget.addEventListener('selectionChanged', function (e) {
+  if (e.detail === null) {
+    // clear filter
+    map.setFilter('Population', null);
+  } else {
+    console.log(e.detail.selection);
+    filter_min = ['>=', ['get', 'population'], e.detail.selection[0]]
+    filter_max = ['<=', ['get', 'population'], e.detail.selection[1]]
+    map.setFilter('Population', ['all', filter_min, filter_max]);
+  }
+});
+}
+addHistogram();
 };
 load_map();
