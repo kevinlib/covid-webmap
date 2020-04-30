@@ -247,17 +247,17 @@ histogramWidget.tooltipFormatter = function (data) {
   return histogramWidget.defaultFormatter(data);
 }
 
-
 histogramWidget.addEventListener('selectionChanged', function (e) {
+  layers.forEach(function (layer) {
   if (e.detail === null) {
     // clear filter
-    map.setFilter('Population', null);
+    map.setFilter(layer['displayName'], null);
   } else {
     filter_min = ['>=', ['get', 'population'], e.detail.selection[0]]
     filter_max = ['<=', ['get', 'population'], e.detail.selection[1]]
-    map.setFilter('Population', ['all', filter_min, filter_max]);
+    map.setFilter(layer['displayName'], ['all', filter_min, filter_max]);
   }
-});
+})});
 }
 addHistogram();
 buttons = ['button-menu', 'button-filter', 'button-legend'];
