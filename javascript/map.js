@@ -8,7 +8,7 @@ maxzoom: 15
 });
 
 async function load_map() {
-  var data = await d3.json("../data/data.json");
+  var data = await d3.json("./data/data.json");
   var layers = [{field: 'population',
                 displayName: 'Population',
                 colorMap: colorbrewer.YlGnBu[6]},
