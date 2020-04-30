@@ -218,5 +218,52 @@ layers.forEach(function (layer) {
   popup.remove();
   });
 });
+function addHistogram(){
+var filter = document.getElementById('pop-filter');
+filter.classList.remove('hide-visually');
+var histogramWidget = document.querySelector('as-histogram-widget');
+x = d3.scaleLinear()
+      .domain(d3.extent(data, function(d) { return d.population; }));
+
+hist = d3.histogram()
+.value(function(d) { return d.population; })   // I need to give the vector of value
+.domain(x.domain())  // then the domain of the graphic
+.thresholds(x.ticks(100))(data);
+rearrange = function(a){return {start: a.x0, end: a.x1, value: a.length}};
+histogramWidget.data = hist.map(rearrange);
+// histogramWidget.range = [0,100];
+histogramWidget.xAxisOptions = {ticks: 10};
+
+histogramWidget.tooltipFormatter = function (data) {
+  return histogramWidget.defaultFormatter(data);
+}
+//
+histogramWidget.addEventListener('selectionChanged', function (e) {
+  if (e.detail === null) {
+    // clear filter
+    map.setFilter('Population', null);
+  } else {
+    console.log(e.detail.selection);
+    filter_min = ['>=', ['get', 'population'], e.detail.selection[0]]
+    filter_max = ['<=', ['get', 'population'], e.detail.selection[1]]
+    map.setFilter('Population', ['all', filter_min, filter_max]);
+  }
+});
+}
+addHistogram();
+buttons = ['button-menu', 'button-filter', 'button-legend'];
+buttons.forEach(function(i) {
+  var item = document.getElementById(i);
+  item.onclick = function(e){
+    // map of btn text to document id
+    const name = {'button-menu':'menu','button-filter':'pop-filter', 'button-legend':'legend-container'};
+    var control = document.getElementById(name[this.id]);
+    if (this.classList.contains('is-active')){
+      control.classList.add('hide-visually');
+      this.classList.remove('is-active');}
+    else {
+      control.classList.remove('hide-visually');
+      this.classList.add('is-active');}
+  }});
 };
 load_map();
