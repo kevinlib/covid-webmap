@@ -6,8 +6,9 @@ center: [-96.7, 41.9],
 zoom: 3,
 maxzoom: 15
 });
+
 async function load_map() {
-  var data = await d3.json("./data/data.json");
+  var data = await d3.json("../data/data.json");
   var layers = [{field: 'population',
                 displayName: 'Population',
                 colorMap: colorbrewer.YlGnBu[6]},
@@ -41,15 +42,62 @@ async function load_map() {
 
   // Create a popup, but don't add it to the map yet.
   var popup = new mapboxgl.Popup({
-  closeButton: false,
+  closeButton: true,
   closeOnClick: false,
   className: 'round'
   });
+
+  //add tooltip
+function addPopup(layer, e) {
+  map.getCanvas().style.cursor = 'pointer';
+  var coordinates = e.features[0].geometry.coordinates.slice();
+  var fill_html = document.createElement('ul');
+  var name = e.features[0].properties['Name'];
+  var state = e.features[0].properties['State'];
+  var population = d3.format(',')(e.features[0].properties['population']);
+  var cases = d3.format(',')(e.features[0].properties['total_cases']);
+
+  var name_item = document.createElement('li');
+  name_item.className = 'txt-bold';
+  name_item.textContent = `County: ${name}`;
+  var state_item = document.createElement('li');
+  state_item.className = 'txt-bold';
+  state_item.textContent = `State: ${state}`;
+  var pop_item = document.createElement('li');
+  pop_item.className = 'txt-bold';
+  pop_item.textContent = `Population: ${population}`;
+  var cases_item = document.createElement('li');
+  cases_item.className = 'txt-bold';
+  cases_item.textContent = `Covid-19 Cases: ${cases}`;
+  fill_html.appendChild(name_item);
+  fill_html.appendChild(state_item);
+  fill_html.appendChild(pop_item);
+  fill_html.appendChild(cases_item);
+
+  if (layer['field'] != 'population' && layer['field'] != 'total_cases'){
+  var layer_data = e.features[0].properties[layer['field']];
+  layer_data = d3.format(',')(layer_data);
+  var item = document.createElement('li');
+  item.className = 'txt-bold';
+  item.textContent = `${layer.displayName}: ${layer_data}`;
+  fill_html.appendChild(item);};
+
+  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+  }
+  // Populate the popup and set its coordinates
+  popup
+  .setLngLat(e.lngLat)
+  .setHTML(fill_html.outerHTML)
+  .addTo(map);
+}
+
   map.on('load', function() {
-  map.addSource('counties', {
+    map.addSource('counties', {
     'type': 'vector',
     'url': 'mapbox://kevinlib.32zfduyq'
     });
+
 //add layers
 layers.forEach(function(layer) {
   var values = data.map(a => a[layer['field']]);
@@ -62,7 +110,6 @@ layers.forEach(function(layer) {
   quantiles.unshift(min)
   quantiles.push(max)
   quantiles = quantiles.map(a => d3.format(".2s")(a.toString()))
-  // quantiles = Math.round.apply(null, quantiles);
   layer.quantiles = quantiles;
   var expression = ['match', ['get', 'GEOID']];
   // bin data
@@ -162,62 +209,25 @@ layers.forEach(function (layer, i) {
       links[i].classList.remove('is-active');
     legendContainer.children[i].classList.add('none');}
   });
+});
 var spinner = document.getElementById('spinner');
 spinner.remove();
-});
 // add tooltip
 layers.forEach(function (layer) {
+  map.on('click', layer['displayName'], function(e) {
+  addPopup(layer, e);
+  });
+
   map.on('mouseenter', layer['displayName'], function(e) {
-  // Change the cursor style as a UI indicator.
   map.getCanvas().style.cursor = 'pointer';
-  var coordinates = e.features[0].geometry.coordinates.slice();
-  var fill_html = document.createElement('ul');
-  var name = e.features[0].properties['Name'];
-  var state = e.features[0].properties['State'];
-  var population = d3.format(',')(e.features[0].properties['population']);
-  var cases = d3.format(',')(e.features[0].properties['total_cases']);
-
-  var name_item = document.createElement('li');
-  name_item.className = 'txt-bold';
-  name_item.textContent = `County: ${name}`;
-  var state_item = document.createElement('li');
-  state_item.className = 'txt-bold';
-  state_item.textContent = `State: ${state}`;
-  var pop_item = document.createElement('li');
-  pop_item.className = 'txt-bold';
-  pop_item.textContent = `Population: ${population}`;
-  var cases_item = document.createElement('li');
-  cases_item.className = 'txt-bold';
-  cases_item.textContent = `Covid-19 Cases: ${cases}`;
-  fill_html.appendChild(name_item);
-  fill_html.appendChild(state_item);
-  fill_html.appendChild(pop_item);
-  fill_html.appendChild(cases_item);
-
-  if (layer['field'] != 'population' && layer['field'] != 'total_cases'){
-  var layer_data = e.features[0].properties[layer['field']];
-  layer_data = d3.format(',')(layer_data);
-  var item = document.createElement('li');
-  item.className = 'txt-bold';
-  item.textContent = `${layer.displayName}: ${layer_data}`;
-  fill_html.appendChild(item);};
-
-  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-  }
-  // Populate the popup and set its coordinates
-  // based on the feature found.
-  popup
-  .setLngLat(e.lngLat)
-  .setHTML(fill_html.outerHTML)
-  .addTo(map);
   });
 
   map.on('mouseleave', layer['displayName'], function() {
   map.getCanvas().style.cursor = '';
-  popup.remove();
+  //popup.remove();
   });
 });
+
 function addHistogram(){
 var filter = document.getElementById('pop-filter');
 filter.classList.remove('hide-visually');
@@ -226,24 +236,23 @@ x = d3.scaleLinear()
       .domain(d3.extent(data, function(d) { return d.population; }));
 
 hist = d3.histogram()
-.value(function(d) { return d.population; })   // I need to give the vector of value
-.domain(x.domain())  // then the domain of the graphic
+.value(function(d) { return d.population; })
+.domain(x.domain())
 .thresholds(x.ticks(100))(data);
 rearrange = function(a){return {start: a.x0, end: a.x1, value: a.length}};
 histogramWidget.data = hist.map(rearrange);
-// histogramWidget.range = [0,100];
 histogramWidget.xAxisOptions = {ticks: 10};
 
 histogramWidget.tooltipFormatter = function (data) {
   return histogramWidget.defaultFormatter(data);
 }
-//
+
+
 histogramWidget.addEventListener('selectionChanged', function (e) {
   if (e.detail === null) {
     // clear filter
     map.setFilter('Population', null);
   } else {
-    console.log(e.detail.selection);
     filter_min = ['>=', ['get', 'population'], e.detail.selection[0]]
     filter_max = ['<=', ['get', 'population'], e.detail.selection[1]]
     map.setFilter('Population', ['all', filter_min, filter_max]);
@@ -255,7 +264,7 @@ buttons = ['button-menu', 'button-filter', 'button-legend'];
 buttons.forEach(function(i) {
   var item = document.getElementById(i);
   item.onclick = function(e){
-    // map of btn text to document id
+    // map of btn id to document id
     const name = {'button-menu':'menu','button-filter':'pop-filter', 'button-legend':'legend-container'};
     var control = document.getElementById(name[this.id]);
     if (this.classList.contains('is-active')){
