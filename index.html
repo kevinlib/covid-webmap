@@ -25,7 +25,7 @@ ul li {list-style-type:none; padding: 0px;}
 h2.as-widget-header__header {margin-left: 6px;}
 .as-widget-selection__selection {margin-left: 6px;}
 #btn-group button {float: left; cursor: pointer; text-align: center; margin-left: 12px;}
-#pop-filter {width: 500px; height:250px;}
+#filter-container {width: 500px; height:300px;}
 </style>
 </head>
 <body>
@@ -49,11 +49,17 @@ id='button-filter'>Filter
 <div class='flex-parent flex-parent--center-cross flex-parent--center-main absolute top right bottom left bg-darken10 z5' id='spinner'>
   <div class='flex-child loading'></div>
 </div>
-<div class='hide-visually absolute left top mt24 ml24 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id='pop-filter'>
+<div class='hide-visually absolute left top mt24 ml24 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id='filter-container'>
+  <div class='absolute top right mt6 mr6 select-container'>
+    <select class='select'>
+    </select>
+    <div class='select-arrow'></div>
+  </div>
   <as-histogram-widget
     color = '#448ee4'
-    heading="Population Filter"
+    heading = 'Filter'
     show-header="true"
+    clear-text="Clear"
     show-clear>
   </as-histogram-widget>
 </div>

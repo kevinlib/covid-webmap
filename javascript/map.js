@@ -229,41 +229,58 @@ layers.forEach(function (layer) {
 });
 
 function addHistogram(){
-var histogramWidget = document.querySelector('as-histogram-widget');
-x = d3.scaleLinear()
-      .domain(d3.extent(data, function(d) { return d.population; }));
-
-hist = d3.histogram()
-.value(function(d) { return d.population; })
-.domain(x.domain())
-.thresholds(x.ticks(100))(data);
-rearrange = function(a){return {start: a.x0, end: a.x1, value: a.length}};
-histogramWidget.data = hist.map(rearrange);
-histogramWidget.xAxisOptions = {ticks: 10};
-
-histogramWidget.tooltipFormatter = function (data) {
-  return histogramWidget.defaultFormatter(data);
-}
-
-histogramWidget.addEventListener('selectionChanged', function (e) {
+  var dropDown = document.querySelector('select');
   layers.forEach(function (layer) {
-  if (e.detail === null) {
-    // clear filter
-    map.setFilter(layer['displayName'], null);
-  } else {
-    filter_min = ['>=', ['get', 'population'], e.detail.selection[0]]
-    filter_max = ['<=', ['get', 'population'], e.detail.selection[1]]
-    map.setFilter(layer['displayName'], ['all', filter_min, filter_max]);
+  var option = document.createElement('option');
+  option.textContent = layer['displayName'];
+  dropDown.appendChild(option);});
+
+  var histogramWidget = document.querySelector('as-histogram-widget');
+  var field = layers[0]['field']; //default
+
+function createHistogram(histogramWidget, field){
+  x = d3.scaleLinear()
+        .domain(d3.extent(data, function(d) { return d[field]; }));
+
+  hist = d3.histogram()
+  .value(function(d) { return d[field]; })
+  .domain(x.domain())
+  .thresholds(x.ticks(100))(data);
+  rearrange = function(a){return {start: a.x0, end: a.x1, value: a.length}};
+  histogramWidget.data = hist.map(rearrange);
+  histogramWidget.xAxisOptions = {ticks: 10};
+
+  histogramWidget.tooltipFormatter = function (data) {
+    return histogramWidget.defaultFormatter(data);
   }
-})});
+
+  histogramWidget.addEventListener('selectionChanged', function (e) {
+    layers.forEach(function (layer) {
+    if (e.detail === null) {
+      // clear filter
+      map.setFilter(layer['displayName'], null);
+    } else {
+      filter_min = ['>=', ['get', field], e.detail.selection[0]]
+      filter_max = ['<=', ['get', field], e.detail.selection[1]]
+      map.setFilter(layer['displayName'], ['all', filter_min, filter_max]);
+    }
+  })});}
+createHistogram(histogramWidget, field);
+function onChange(){
+
+  var select_id = document.querySelector("select");
+  var histogramWidget = document.querySelector('as-histogram-widget');
+  var field = layers[select_id.selectedIndex]['field'];
+  createHistogram(histogramWidget, field);
+  }
+dropDown.addEventListener("change", onChange);
 }
-addHistogram();
 buttons = ['button-menu', 'button-filter', 'button-legend'];
 buttons.forEach(function(i) {
   var item = document.getElementById(i);
   item.onclick = function(e){
     // map of btn id to document id
-    const name = {'button-menu':'menu','button-filter':'pop-filter', 'button-legend':'legend-container'};
+    const name = {'button-menu':'menu','button-filter':'filter-container', 'button-legend':'legend-container'};
     var control = document.getElementById(name[this.id]);
     if (this.classList.contains('is-active')){
       control.classList.add('hide-visually');
@@ -272,5 +289,6 @@ buttons.forEach(function(i) {
       control.classList.remove('hide-visually');
       this.classList.add('is-active');}
   }});
+addHistogram();
 };
 load_map();
