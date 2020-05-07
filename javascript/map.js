@@ -57,29 +57,35 @@ function addPopup(layer, e) {
   var population = d3.format(',')(e.features[0].properties['population']);
   var cases = d3.format(',')(e.features[0].properties['total_cases']);
 
-  var name_item = document.createElement('li');
-  name_item.className = 'txt-bold';
-  name_item.textContent = `County: ${name}`;
-  var state_item = document.createElement('li');
-  state_item.className = 'txt-bold';
-  state_item.textContent = `State: ${state}`;
-  var pop_item = document.createElement('li');
-  pop_item.className = 'txt-bold';
-  pop_item.textContent = `Population: ${population}`;
-  var cases_item = document.createElement('li');
-  cases_item.className = 'txt-bold';
-  cases_item.textContent = `Covid-19 Cases: ${cases}`;
+  var name_item = document.createElement('h1');
+  name_item.className = 'txt-bold'
+  name_item.textContent = `${name}, ${state}`;
   fill_html.appendChild(name_item);
-  fill_html.appendChild(state_item);
+
+  var pop_item = document.createElement('li');
+  pop_item.className = 'txt-s';
+  pop_item.textContent = `Population: `
+  var pop_value = document.createElement('strong');
+  pop_value.textContent = `${population}`;
+  pop_item.appendChild(pop_value);
   fill_html.appendChild(pop_item);
+  var cases_item = document.createElement('li');
+  cases_item.className = 'txt-s';
+  cases_item.textContent = `Covid-19 Cases: `
+  var case_count = document.createElement('strong');
+  case_count.textContent = `${cases}`;
+  cases_item.appendChild(case_count);
   fill_html.appendChild(cases_item);
 
   if (layer['field'] != 'population' && layer['field'] != 'total_cases'){
   var layer_data = e.features[0].properties[layer['field']];
   layer_data = d3.format(',')(layer_data);
   var item = document.createElement('li');
-  item.className = 'txt-bold';
-  item.textContent = `${layer.displayName}: ${layer_data}`;
+  item.className = 'txt-s';
+  item.textContent = `${layer.displayName}: `
+  var number = document.createElement('strong');
+  number.textContent = `${layer_data}`;
+  item.appendChild(number);
   fill_html.appendChild(item);};
 
   while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
@@ -91,6 +97,13 @@ function addPopup(layer, e) {
   .setHTML(fill_html.outerHTML)
   .addTo(map);
 }
+
+function getArrayDepth(value) {
+  return Array.isArray(value) ?
+    1 + Math.max(...value.map(getArrayDepth)) :
+    0;
+}
+
 
   map.on('load', function() {
     map.addSource('counties', {
@@ -275,12 +288,12 @@ function onChange(){
   }
 dropDown.addEventListener("change", onChange);
 }
-buttons = ['button-menu', 'button-filter', 'button-legend'];
+buttons = ['button-menu', 'button-filter', 'button-legend', 'button-search'];
 buttons.forEach(function(i) {
   var item = document.getElementById(i);
   item.onclick = function(e){
     // map of btn id to document id
-    const name = {'button-menu':'menu','button-filter':'filter-container', 'button-legend':'legend-container'};
+    const name = {'button-menu':'menu','button-filter':'filter-container', 'button-legend':'legend-container', 'button-search':'search-bar'};
     var control = document.getElementById(name[this.id]);
     if (this.classList.contains('is-active')){
       control.classList.add('hide-visually');
@@ -290,5 +303,100 @@ buttons.forEach(function(i) {
       this.classList.add('is-active');}
   }});
 addHistogram();
+var search_bar = document.querySelector("input");
+
+function getUniqueFeatures(array, comparatorProperty) {
+var existingFeatureKeys = {};
+// Because features come from tiled vector data, feature geometries may be split
+// or duplicated across tile boundaries and, as a result, features may appear
+// multiple times in query results.
+var uniqueFeatures = array.filter(function(el) {
+if (existingFeatureKeys[el.properties[comparatorProperty]]) {
+return false;
+} else {
+existingFeatureKeys[el.properties[comparatorProperty]] = true;
+return true;
+}
+});
+return uniqueFeatures;
+
+}
+
+// markers saved here
+var currentMarkers=[];
+
+function userSearch() {
+
+  // remove markers
+  if (currentMarkers != null) {
+      for (var i = currentMarkers.length - 1; i >= 0; i--) {
+        currentMarkers[i].remove();
+      }
+  }
+
+  var input = _.split(this.value, ',', 2)
+  input = _.map(input, _.trim)
+  county_name = _.startCase(input[0])
+  state_name = _.upperCase(input[1])
+  var filter_expression;
+  if (!state_name){
+    filter_expression = ['==', 'Name', county_name]
+  }
+  else {
+    filter_county = ['==', ['get', 'Name'], county_name]
+    filter_state = ['==', ['get', 'State'], state_name]
+    filter_expression = ['all', filter_county, filter_state];
+  }
+  //Find all features in one source layer in a vector source
+  var features = map.querySourceFeatures('counties', {
+  sourceLayer: 'data-1mbq73', filter: filter_expression});
+  features = getUniqueFeatures(features, 'GEOID');
+  if (features.length > 0) {
+
+  features.forEach(function(f){
+    var coords = f.geometry.coordinates;
+    var coords = _.flattenDepth(f.geometry.coordinates, getArrayDepth(coords) - 2);
+    coords = coords.map(function(a){ return {'lon': a[0], 'lat': a[1]} });
+    var mean_lon = _.meanBy(coords, 'lon');
+    var mean_lat = _.meanBy(coords, 'lat');
+    var centroid = [mean_lon, mean_lat];
+
+    var fill_html = document.createElement('ul');
+    fill_html.className = 'ml6 mr6'
+    var name = f.properties['Name'];
+    var state = f.properties['State'];
+    var name_item = document.createElement('h1');
+    name_item.className = 'txt-bold txt-l'
+    name_item.textContent = `${name}, ${state}`;
+    fill_html.appendChild(name_item);
+
+    layers.forEach(function(layer){
+      var layer_data = f.properties[layer['field']];
+      layer_data = d3.format(',')(layer_data);
+      var item = document.createElement('li');
+      item.className = 'txt-s';
+      item.textContent = `${layer.displayName}: `
+      var number = document.createElement('strong');
+      number.textContent = `${layer_data}`;
+      item.appendChild(number);
+      fill_html.appendChild(item);
+    });
+    var marker_popup = new mapboxgl.Popup({
+    closeButton: true,
+    closeOnClick: false,
+    className: 'round',
+    maxWidth: 'none'
+    }).setHTML(fill_html.outerHTML);
+
+
+    var marker = new mapboxgl.Marker({color:'#ff00fb'})
+                .setLngLat(centroid)
+                .setPopup(marker_popup)
+                .addTo(map);
+    currentMarkers.push(marker);
+  });
+  }
+}
+search_bar.addEventListener("input", userSearch);
 };
 load_map();
