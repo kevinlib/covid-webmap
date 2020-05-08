@@ -114,7 +114,7 @@ function getArrayDepth(value) {
   map.on('load', function() {
     map.addSource('counties', {
     'type': 'vector',
-    'url': 'mapbox://kevinlib.32zfduyq'
+    'url': 'mapbox://kevinlib.1wbbmql3'
     });
 
 //add layers
@@ -144,7 +144,7 @@ layers.forEach(function(layer) {
   'id': layer['displayName'],
   'type': 'fill',
   'source': 'counties',
-  'source-layer': 'data-1mbq73',
+  'source-layer': 'data-118w2o',
   'layout': {'visibility': 'none'},
   'paint': {
   'fill-color': expression,
@@ -355,7 +355,7 @@ function userSearch() {
   }
   //Find all features in one source layer in a vector source
   var features = map.querySourceFeatures('counties', {
-  sourceLayer: 'data-1mbq73', filter: filter_expression});
+  sourceLayer: 'data-118w2o', filter: filter_expression});
   features = getUniqueFeatures(features, 'GEOID');
   if (features.length > 0) {
 
