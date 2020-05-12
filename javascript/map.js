@@ -446,5 +446,5 @@ if (currentMarkers != null) {
     }
 }
 });
-};
+}
 load_map();
