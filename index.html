@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="https://libs.cartocdn.com/airship-style/v2.1.1/airship.css">
 <script src="https://libs.cartocdn.com/airship-components/v2.1.1/airship.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.min.js"></script>
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -26,7 +28,48 @@ h2.as-widget-header__header {margin-left: 6px;}
 .as-widget-selection__selection {margin-left: 6px;}
 #btn-group button {float: left; cursor: pointer; text-align: center; margin-left: 12px;}
 #filter-container {width: 480px}
-#search-bar {width: 480px;}
+#search-bar {width: 480px}
+#search-input {width: 480px}
+#search-clear {padding-top: 8px}
+.tt-input {
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.tt-hint {
+  color: #999
+}
+
+.tt-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  width: 480px;
+  margin-top: 4px;
+  padding: 4px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+          box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+  padding: 3px 20px;
+  line-height: 24px;
+}
+
+.tt-suggestion.tt-cursor,.tt-suggestion:hover {
+  color: #fff;
+  background-color: #448ee4;
+}
+.tt-suggestion p {
+  margin: 0;
+}
 </style>
 </head>
 <body>
@@ -54,14 +97,12 @@ id='button-filter'>Filter
 <div class='flex-parent flex-parent--center-cross flex-parent--center-main absolute top right bottom left bg-darken10 z5' id='spinner'>
   <div class='flex-child loading'></div>
 </div>
-<div class='absolute left top mt36 ml24 flex-parent flex-parent--wrap'>
-<div class='hide-visually absolute left top round bg-white flex-parent shadow-darken10' id="search-bar">
-    <div class='absolute right flex-parent flex-parent--center-cross flex-parent--center-main w36 h36'>
-      <svg class='icon'><use xlink:href='#icon-search'></use></svg>
-    </div>
-    <input class='input pl30' placeholder='Search by county' id="search-input">
+<div class='hide-visually absolute left top mt36 ml24 round bg-white flex-parent shadow-darken10' id="search-bar">
+  <span class="absolute right z1 link mx12 txt-s" id='search-clear'>Clear</span>
+    <input class='input typeahead' type="text" placeholder='Search by county' autocomplete="off" id="search-input">
+    <!-- <span class="link ml12 pt6" id='search-clear'>Clear</span> -->
 </div>
-<div class='hide-visually absolute left top mt120 h300 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id='filter-container'>
+<div class='hide-visually absolute left top ml24 mt180 h300 round bg-white flex-parent flex-parent--column py6 shadow-darken10' id='filter-container'>
   <div class='absolute top right mt6 mr6 select-container'>
     <select class='select'>
     </select>
@@ -74,7 +115,6 @@ id='button-filter'>Filter
     clear-text="Clear"
     show-clear>
   </as-histogram-widget>
-</div>
 </div>
 <script src="./javascript/map.js"></script>
 </body>

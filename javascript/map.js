@@ -12,9 +12,15 @@ async function load_map() {
   var layers = [{field: 'population',
                 displayName: 'Population',
                 colorMap: colorbrewer.YlGnBu[6]},
+                {field: 'pop_density',
+                 displayName: 'Population Density',
+                 colorMap: colorbrewer.YlGnBu[6]},
                 {field: 'total_cases',
-                 displayName: 'Covid-19 Cases',
+                 displayName: 'Total Covid-19 Cases',
                  colorMap: colorbrewer.YlOrRd[6]},
+                 {field: 'case_density',
+                  displayName: 'Covid-19 Cases Per 100,000',
+                  colorMap: colorbrewer.YlOrRd[6]},
                 {field: 'CVD_deathrate',
                  displayName: 'Cardio-Vascular Disease Rate',
                  colorMap: colorbrewer.YlOrRd[6]},
@@ -49,6 +55,7 @@ async function load_map() {
 
   //add tooltip
 function addPopup(layer, e) {
+  console.log(e.features);
   map.getCanvas().style.cursor = 'pointer';
   var coordinates = e.features[0].geometry.coordinates.slice();
   var fill_html = document.createElement('ul');
@@ -108,7 +115,7 @@ function getArrayDepth(value) {
   map.on('load', function() {
     map.addSource('counties', {
     'type': 'vector',
-    'url': 'mapbox://kevinlib.32zfduyq'
+    'url': 'mapbox://kevinlib.1wbbmql3'
     });
 
 //add layers
@@ -138,7 +145,7 @@ layers.forEach(function(layer) {
   'id': layer['displayName'],
   'type': 'fill',
   'source': 'counties',
-  'source-layer': 'data-1mbq73',
+  'source-layer': 'data-118w2o',
   'layout': {'visibility': 'none'},
   'paint': {
   'fill-color': expression,
@@ -324,17 +331,58 @@ return uniqueFeatures;
 
 // markers saved here
 var currentMarkers=[];
+var nameList = _.orderBy(data, ['Name', 'State'], ['asc', 'desc']).map(function(a){ return `${a.Name}, ${a.State}` });
+// var datalist = document.querySelector('datalist');
+// datalist.id = 'names';
+// nameList.forEach(function(name) {
+// var option = document.createElement('option');
+// option.value = name;
+// datalist.appendChild(option)});
 
-function userSearch() {
+// constructs the suggestion engine
 
+var names = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.whitespace,
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  // `states` is an array of state names defined in "The Basics"
+  local: nameList,
+  limit: 10
+});
+
+$('.typeahead').typeahead({
+  hint: true,
+  highlight: false,
+},
+{
+  name: 'names',
+  source: names,
+  limit: 10
+});
+
+$('.typeahead').bind('typeahead:change', function(e) {
+  userSearch(e.target.value);
+});
+
+$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+$('.typeahead').bind('typeahead:cursorchange', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+$('.typeahead').bind('typeahead:autocomplete', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+function userSearch(value) {
   // remove markers
   if (currentMarkers != null) {
       for (var i = currentMarkers.length - 1; i >= 0; i--) {
         currentMarkers[i].remove();
       }
   }
-
-  var input = _.split(this.value, ',', 2)
+  var input = _.split(value, ',', 2)
   input = _.map(input, _.trim)
   county_name = _.startCase(input[0])
   state_name = _.upperCase(input[1])
@@ -349,11 +397,13 @@ function userSearch() {
   }
   //Find all features in one source layer in a vector source
   var features = map.querySourceFeatures('counties', {
-  sourceLayer: 'data-1mbq73', filter: filter_expression});
+  sourceLayer: 'data-118w2o', filter: filter_expression});
   features = getUniqueFeatures(features, 'GEOID');
   if (features.length > 0) {
 
+  //don't use feature state. need to add new layer for highlighting, tooltip
   features.forEach(function(f){
+    //addPopupSearch(f)
     var coords = f.geometry.coordinates;
     var coords = _.flattenDepth(f.geometry.coordinates, getArrayDepth(coords) - 2);
     coords = coords.map(function(a){ return {'lon': a[0], 'lat': a[1]} });
@@ -397,6 +447,16 @@ function userSearch() {
   });
   }
 }
-search_bar.addEventListener("input", userSearch);
+
+$('#search-clear').click(function() {
+$('.typeahead').typeahead('val','');
+$('.typeahead').typeahead('close');
+// remove markers
+if (currentMarkers != null) {
+    for (var i = currentMarkers.length - 1; i >= 0; i--) {
+      currentMarkers[i].remove();
+    }
+}
+});
 };
 load_map();
