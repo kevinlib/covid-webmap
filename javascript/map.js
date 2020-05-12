@@ -243,7 +243,6 @@ layers.forEach(function (layer) {
 
   map.on('mouseleave', layer['displayName'], function() {
   map.getCanvas().style.cursor = '';
-  //popup.remove();
   });
 });
 
@@ -330,17 +329,48 @@ return uniqueFeatures;
 
 // markers saved here
 var currentMarkers=[];
+var nameList = _.orderBy(data, ['Name', 'State'], ['asc', 'desc']).map(function(a){ return `${a.Name}, ${a.State}` });
+var names = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.whitespace,
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  local: nameList,
+  limit: 10
+});
 
-function userSearch() {
+$('.typeahead').typeahead({
+  hint: true,
+  highlight: false,
+},
+{
+  name: 'names',
+  source: names,
+  limit: 10
+});
 
+$('.typeahead').bind('typeahead:change', function(e) {
+  userSearch(e.target.value);
+});
+
+$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+$('.typeahead').bind('typeahead:cursorchange', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+$('.typeahead').bind('typeahead:autocomplete', function(ev, suggestion) {
+  userSearch(suggestion);
+});
+
+function userSearch(value) {
   // remove markers
   if (currentMarkers != null) {
       for (var i = currentMarkers.length - 1; i >= 0; i--) {
         currentMarkers[i].remove();
       }
   }
-
-  var input = _.split(this.value, ',', 2)
+  var input = _.split(value, ',', 2)
   input = _.map(input, _.trim)
   county_name = _.startCase(input[0])
   state_name = _.upperCase(input[1])
@@ -359,7 +389,9 @@ function userSearch() {
   features = getUniqueFeatures(features, 'GEOID');
   if (features.length > 0) {
 
+  //don't use feature state. need to add new layer for highlighting, tooltip
   features.forEach(function(f){
+    //addPopupSearch(f)
     var coords = f.geometry.coordinates;
     var coords = _.flattenDepth(f.geometry.coordinates, getArrayDepth(coords) - 2);
     coords = coords.map(function(a){ return {'lon': a[0], 'lat': a[1]} });
@@ -403,6 +435,16 @@ function userSearch() {
   });
   }
 }
-search_bar.addEventListener("input", userSearch);
+
+$('#search-clear').click(function() {
+$('.typeahead').typeahead('val','');
+$('.typeahead').typeahead('close');
+// remove markers
+if (currentMarkers != null) {
+    for (var i = currentMarkers.length - 1; i >= 0; i--) {
+      currentMarkers[i].remove();
+    }
+}
+});
 };
 load_map();
