@@ -330,6 +330,8 @@ return uniqueFeatures;
 // markers saved here
 var currentMarkers=[];
 var nameList = _.orderBy(data, ['Name', 'State'], ['asc', 'desc']).map(function(a){ return `${a.Name}, ${a.State}` });
+
+// constructs the suggestion engine
 var names = new Bloodhound({
   datumTokenizer: Bloodhound.tokenizers.whitespace,
   queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -391,7 +393,6 @@ function userSearch(value) {
 
   //don't use feature state. need to add new layer for highlighting, tooltip
   features.forEach(function(f){
-    //addPopupSearch(f)
     var coords = f.geometry.coordinates;
     var coords = _.flattenDepth(f.geometry.coordinates, getArrayDepth(coords) - 2);
     coords = coords.map(function(a){ return {'lon': a[0], 'lat': a[1]} });
