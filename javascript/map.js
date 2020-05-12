@@ -55,7 +55,6 @@ async function load_map() {
 
   //add tooltip
 function addPopup(layer, e) {
-  console.log(e.features);
   map.getCanvas().style.cursor = 'pointer';
   var coordinates = e.features[0].geometry.coordinates.slice();
   var fill_html = document.createElement('ul');
@@ -244,7 +243,6 @@ layers.forEach(function (layer) {
 
   map.on('mouseleave', layer['displayName'], function() {
   map.getCanvas().style.cursor = '';
-  //popup.remove();
   });
 });
 
@@ -332,19 +330,9 @@ return uniqueFeatures;
 // markers saved here
 var currentMarkers=[];
 var nameList = _.orderBy(data, ['Name', 'State'], ['asc', 'desc']).map(function(a){ return `${a.Name}, ${a.State}` });
-// var datalist = document.querySelector('datalist');
-// datalist.id = 'names';
-// nameList.forEach(function(name) {
-// var option = document.createElement('option');
-// option.value = name;
-// datalist.appendChild(option)});
-
-// constructs the suggestion engine
-
 var names = new Bloodhound({
   datumTokenizer: Bloodhound.tokenizers.whitespace,
   queryTokenizer: Bloodhound.tokenizers.whitespace,
-  // `states` is an array of state names defined in "The Basics"
   local: nameList,
   limit: 10
 });
